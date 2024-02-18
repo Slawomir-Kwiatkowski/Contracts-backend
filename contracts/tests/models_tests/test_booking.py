@@ -1,9 +1,9 @@
 from django.test import TestCase
 from users.models import ContractUser
-from ...models import Warehouse, Contract
+from ...models import Warehouse, Contract, Booking
 
 
-class ContractTestCase(TestCase):
+class BookingTestCase(TestCase):
 
     def setUp(self):
         self.client = ContractUser.objects.create(
@@ -20,9 +20,7 @@ class ContractTestCase(TestCase):
             warehouse_info="TestWarehouse info",
             client=self.client,
         )
-
-    def test_create(self):
-        contract = Contract.objects.create(
+        self.contract = Contract.objects.create(
             contract_number="AAA12345",
             client=self.client,
             contractor=self.contractor,
@@ -31,12 +29,18 @@ class ContractTestCase(TestCase):
             warehouse=self.warehouse,
             pallets_planned=10,
         )
-        self.assertEqual(contract.status, "open")
-        self.assertEqual(contract.contract_number, "AAA12345")
-        self.assertEqual(str(contract.client), "client")
-        self.assertEqual(str(contract.contractor), "contractor")
-        self.assertEqual(contract.date_of_delivery, "2024-01-01")
-        self.assertEqual(contract.time_of_delivery, "12:00")
-        self.assertEqual(str(contract.warehouse), "TestWarehouse")
-        self.assertEqual(contract.pallets_planned, 10)
-        self.assertEqual(str(contract), "AAA12345")
+
+    def test_create(self):
+        booking = Booking.objects.create(
+            contract=self.contract,
+            pallets_actual=10,
+            driver_full_name="John Doe",
+            driver_phone_number="555 55 55",
+            truck_reg_number="ABC0123",
+        )
+        self.assertEqual(booking.contract, self.contract)
+        self.assertEqual(booking.pallets_actual, 10)
+        self.assertEqual(booking.driver_full_name, "John Doe")
+        self.assertEqual(booking.driver_phone_number, "555 55 55")
+        self.assertEqual(booking.truck_reg_number, "ABC0123")
+        self.assertEqual(str(booking), self.contract.contract_number)
