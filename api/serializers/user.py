@@ -6,7 +6,7 @@ class ContractUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContractUser
         # fields = "__all__"
-        fields = ("id", "username", "password", "email", "profile")
+        fields = ("username", "password", "email", "profile")
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
