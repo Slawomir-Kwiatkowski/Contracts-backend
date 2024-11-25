@@ -16,6 +16,7 @@ class WarehouseAPITestCase(APITestCase):
             warehouse_info="Warehouse info",
             client=self.user,
         )
+        self.client.force_authenticate(user=self.user)
 
     def test_get(self):
         endpoint = reverse("warehouse-list")

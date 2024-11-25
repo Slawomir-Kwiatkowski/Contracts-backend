@@ -1,23 +1,33 @@
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.urls import reverse
+from django.core import mail
 from users.models import ContractUser
 
 
-class ContractUserAPITestCase(APITestCase):
+class NewUserAPITestCase(APITestCase):
 
-    def test_create(self):
+    def test_user(self):
+        # Test create inactive user and send verification email
         endpoint = reverse("user-list")
-        user_data = {"username": "user", "password": "123", "email": "user@company.com"}
-        response = self.client.post(endpoint, data=user_data, format="json")
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = {
+            "username": "testUser",
+            "email": "testUser@company.com",
+            "password": "123456",
+        }
+        response = self.client.post(endpoint, data, format="json")
 
-    def test_retrieve(self):
-        user = ContractUser.objects.create(
-            username="user",
-            password="123",
-            email="user@company.com",
-        )
-        endpoint = reverse("user-detail", args=[user.id])
-        response = self.client.get(endpoint, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(len(mail.outbox), 1)  # test if email is sent
+
+        # Test account verification
+        token = mail.outbox[0].body.split("=")[1]
+        response = self.client.get(endpoint, data={"token": token}, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Test verification email resending
+        endpoint = reverse("user-resend-email")
+        data = {"username": "testUser"}
+        response = self.client.post(endpoint, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(mail.outbox), 2)  # test if email is sent

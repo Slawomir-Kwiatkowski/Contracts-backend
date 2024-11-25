@@ -6,9 +6,11 @@ class WarehouseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Warehouse
-        fields = ["warehouse_name", "warehouse_info"]
+        fields = ["id", "warehouse_name", "warehouse_info"]
+
+    def validate(self, attrs):
+        return super().validate(attrs)
 
     def create(self, validated_data):
         validated_data["client"] = self.context["client"]
-        contract = Warehouse.objects.create(**validated_data)
-        return contract
+        return super().create(validated_data)

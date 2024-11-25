@@ -19,12 +19,18 @@ class Contract(models.Model):
             else:
                 return value
 
+    def contractors_choices():
+        contractors = ContractUser.objects.filter(profile="contractor").all()
+        return [(item.username, item.username) for item in contractors]
+
+    def warehouses_choices():
+        warehouses = Warehouse.objects.all()
+        return [(item.warehouse_name, item.warehouse_name) for item in warehouses]
+
     status = models.CharField(max_length=9, default="open")
     contract_number = models.CharField(max_length=15, unique=True)
     client = models.ForeignKey(ContractUser, on_delete=models.CASCADE)
-    contractor = models.ForeignKey(
-        ContractUser, on_delete=models.CASCADE, related_name="+"
-    )
+    contractor = models.CharField(choices=contractors_choices, max_length=15)
     date_of_order = models.DateTimeField(default=timezone.now)
     date_of_delivery = models.DateField(validators=(DeliveryDateValidator.validate,))
     time_of_delivery = models.TimeField()
@@ -34,7 +40,7 @@ class Contract(models.Model):
             validators.MaxValueValidator(30, "Max number of pallets is 30"),
         )
     )
-    warehouse = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
+    warehouse = models.CharField(choices=warehouses_choices, max_length=15)
 
     def __str__(self):
         return self.contract_number
